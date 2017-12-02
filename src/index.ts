@@ -21,7 +21,8 @@ export function deserialize<T>(Classtype: { new(): T }, jsonObject): T {
             return;
         }
         if (metaData.customConverter) {
-            typedObject[key] = metaData.customConverter.fromJson(jsonObject[metaData.name || key]);
+            const data = !_.isUndefined(metaData.name) && !_.isUndefined(jsonObject[metaData.name]) ? jsonObject[metaData.name] : jsonObject[key];
+            typedObject[key] = metaData.customConverter.fromJson(data);
         } else {
             typedObject[key] = mapFromJson(typedObject, jsonObject, key);
         }
@@ -35,7 +36,7 @@ function mapFromJson<T>(instance: T, json: any, key: string): any {
         return;
     }
     let classType = getClasstype(instance, key);
-    let value = !_.isUndefined(metaData.name) ? json[metaData.name] : json[key];
+    let value = !_.isUndefined(metaData.name) && !_.isUndefined(json[metaData.name]) ? json[metaData.name] : json[key];
     if (_.isUndefined(value)) {
         return value;
     }

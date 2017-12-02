@@ -70,6 +70,21 @@ describe('json mapper', () => {
             expect(result.bar).toBe(object.test);
             expect(result.baz).toBe(object.prop);
         });
+
+        it('should property if original key already exists', () => {
+            class Foo {
+                @JsonProperty('test')
+                public bar: string = undefined;
+            }
+    
+            let object = {
+                bar: jasmine.any(String)
+            };
+            const result = deserialize(Foo, object);
+    
+            expect(result instanceof Foo).toBe(true);
+            expect(result.bar).toBe(object.bar);
+        });
     
         it('should NOT map', () => {
             class Foo {
