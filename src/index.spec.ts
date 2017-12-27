@@ -58,17 +58,21 @@ describe('json mapper', () => {
                 public bar: string = undefined;
                 @JsonProperty({ name: 'prop' })
                 public baz: string = undefined;
+                @JsonProperty()
+                public any: any = undefined;
             }
     
             let object = {
                 test: jasmine.any(String),
-                prop: jasmine.any(String)
+                prop: jasmine.any(String),
+                any: 'aaa'
             };
             const result = deserialize(Foo, object);
     
             expect(result instanceof Foo).toBe(true);
             expect(result.bar).toBe(object.test);
             expect(result.baz).toBe(object.prop);
+            expect(result.any).toBe(object.any);
         });
 
         it('should property if original key already exists', () => {

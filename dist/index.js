@@ -51,7 +51,7 @@ function mapFromJson(instance, json, key) {
         }
         return value;
     }
-    if (!isPrimitive(classType)) {
+    if (!isPrimitive(classType) && !isPrimitive(value)) {
         return deserialize(classType, value);
     }
     return value;

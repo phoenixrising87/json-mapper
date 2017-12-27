@@ -70,6 +70,7 @@ describe('json mapper', () => {
                 constructor() {
                     this.bar = undefined;
                     this.baz = undefined;
+                    this.any = undefined;
                 }
             }
             __decorate([
@@ -80,14 +81,20 @@ describe('json mapper', () => {
                 index_1.JsonProperty({ name: 'prop' }),
                 __metadata("design:type", String)
             ], Foo.prototype, "baz", void 0);
+            __decorate([
+                index_1.JsonProperty(),
+                __metadata("design:type", Object)
+            ], Foo.prototype, "any", void 0);
             let object = {
                 test: jasmine.any(String),
-                prop: jasmine.any(String)
+                prop: jasmine.any(String),
+                any: 'aaa'
             };
             const result = index_1.deserialize(Foo, object);
             expect(result instanceof Foo).toBe(true);
             expect(result.bar).toBe(object.test);
             expect(result.baz).toBe(object.prop);
+            expect(result.any).toBe(object.any);
         });
         it('should property if original key already exists', () => {
             class Foo {

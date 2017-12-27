@@ -53,7 +53,7 @@ function mapFromJson<T>(instance: T, json: any, key: string): any {
         return value;
     }
     
-    if (!isPrimitive(classType)) {
+    if (!isPrimitive(classType) && !isPrimitive(value)) {
         return deserialize(classType, value);
     }
     return value;
