@@ -51,8 +51,12 @@ describe('json mapper', () => {
     });
 
     describe('deserialize', () => {
-        
+
         it('should map json property to object', () => {
+            enum Options {
+                KEY = 'VALUE'
+            }
+
             class Foo {
                 @JsonProperty('test')
                 public bar: string = undefined;
@@ -60,12 +64,15 @@ describe('json mapper', () => {
                 public baz: string = undefined;
                 @JsonProperty()
                 public any: any = undefined;
+                @JsonProperty()
+                public options: Options = undefined;
             }
     
             let object = {
                 test: jasmine.any(String),
                 prop: jasmine.any(String),
-                any: 'aaa'
+                any: 'aaa',
+                options: Options.KEY
             };
             const result = deserialize(Foo, object);
     
@@ -73,6 +80,7 @@ describe('json mapper', () => {
             expect(result.bar).toBe(object.test);
             expect(result.baz).toBe(object.prop);
             expect(result.any).toBe(object.any);
+            expect(result.options).toBe(Options.KEY);
         });
 
         it('should property if original key already exists', () => {
@@ -192,7 +200,7 @@ describe('json mapper', () => {
         });
     });
 
-    describe('custom converter', () => {
+   describe('custom converter', () => {
 
         class DateConverter implements ICustomConverter {
             public fromJson(data: string): Date {
