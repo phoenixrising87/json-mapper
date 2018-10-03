@@ -52,6 +52,9 @@ function mapFromJson(instance, json, key) {
         return value;
     }
     if (!isPrimitive(classType) && !isPrimitive(value)) {
+        if (metaData.classtype) {
+            return deserialize(metaData.classtype, value);
+        }
         return deserialize(classType, value);
     }
     return value;
@@ -73,11 +76,23 @@ function isPrimitive(obj) {
         obj instanceof Number || obj === Number ||
         obj instanceof Boolean || obj === Boolean);
 }
-function serialize(instance) {
+function serialize(instance, metaData) {
     if (!_.isObjectLike(instance) || isArray(instance)) {
         return instance;
     }
     const object = {};
+    if (metaData && metaData.classtype) {
+        let typedObject = new metaData.classtype();
+        _.forOwn(typedObject, (value, key) => {
+            const metaData = decorator_1.getJsonProperty(typedObject, key);
+            if (_.isUndefined(metaData)) {
+                return;
+            }
+            object[metaData.name ? metaData.name : key] = metaData.customConverter
+                ? metaData.customConverter.toJson(value) : serializeProperty(metaData, instance[key]);
+        });
+        return object;
+    }
     _.forOwn(instance, (value, key) => {
         const metaData = decorator_1.getJsonProperty(instance, key);
         if (_.isUndefined(metaData)) {
@@ -90,11 +105,16 @@ function serialize(instance) {
 }
 exports.serialize = serialize;
 function serializeProperty(metaData, property) {
-    if (metaData.classtype) {
-        return serialize(property);
-    }
     if (isArray(property)) {
-        return _.map(property, (item) => serialize(item));
+        return _.map(property, (item) => {
+            if (metaData.classtype) {
+                return serialize(property, metaData);
+            }
+            return serialize(item);
+        });
+    }
+    if (metaData.classtype) {
+        return serialize(property, metaData);
     }
     return property;
 }

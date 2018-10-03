@@ -40,7 +40,7 @@ function mapFromJson<T>(instance: T, json: any, key: string): any {
     if (_.isUndefined(value)) {
         return value;
     }
-    
+
     if (isArray(classType)) {
         if (metaData.classtype || isPrimitive(classType)) {
             if (!isArray(value)) {
@@ -54,6 +54,9 @@ function mapFromJson<T>(instance: T, json: any, key: string): any {
     }
     
     if (!isPrimitive(classType) && !isPrimitive(value)) {
+        if (metaData.classtype) {
+            return deserialize(metaData.classtype, value);
+        }
         return deserialize(classType, value);
     }
     return value;
@@ -78,13 +81,26 @@ function isPrimitive(obj): boolean {
     obj instanceof Boolean || obj === Boolean);
 }
 
-export function serialize(instance: any): any {
+export function serialize(instance: any, metaData?: IJsonMetaData<any>): any {
     
     if (!_.isObjectLike(instance) || isArray(instance)) {
         return instance;
     }
 
     const object: any = {};
+    if (metaData && metaData.classtype) {
+        let typedObject = new metaData.classtype();
+        _.forOwn(typedObject, (value, key) => {
+            const metaData = getJsonProperty(typedObject, key);
+            if (_.isUndefined(metaData)) {
+                return;
+            }
+            object[metaData.name ? metaData.name : key] = metaData.customConverter 
+                ? metaData.customConverter.toJson(value) : serializeProperty(metaData, instance[key]);
+        });
+        return object;
+    }
+    
     _.forOwn(instance, (value, key) => {
         const metaData = getJsonProperty(instance, key);
         if (_.isUndefined(metaData)) {
@@ -98,12 +114,18 @@ export function serialize(instance: any): any {
 
 function serializeProperty(metaData: IJsonMetaData<any>, property: any): any {
 
-    if (metaData.classtype) {
-        return serialize(property);
+    if (isArray(property)) {        
+        return _.map(property, (item: any) => {
+            if (metaData.classtype) {
+                return serialize(property, metaData);
+            }
+
+            return serialize(item);
+        });
     }
 
-    if (isArray(property)) {        
-        return _.map(property, (item: any) => serialize(item));
+    if (metaData.classtype) {
+        return serialize(property, metaData);
     }
 
     return property;

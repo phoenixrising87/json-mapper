@@ -12,11 +12,53 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("./index");
 describe('json mapper', () => {
     describe('serialize', () => {
+        it('should serialize interfaces to classtype', () => {
+            class Bar {
+                constructor() {
+                    this.value = undefined;
+                    this.value_name = undefined;
+                }
+            }
+            __decorate([
+                index_1.JsonProperty(),
+                __metadata("design:type", String)
+            ], Bar.prototype, "value", void 0);
+            __decorate([
+                index_1.JsonProperty('value_rename'),
+                __metadata("design:type", String)
+            ], Bar.prototype, "value_name", void 0);
+            class BarCopy {
+                constructor() {
+                    this.value = 'test';
+                    this.value_name = 'test2';
+                }
+            }
+            class Foo {
+                constructor() {
+                    this.bar = new BarCopy();
+                }
+            }
+            __decorate([
+                index_1.JsonProperty({ classtype: Bar }),
+                __metadata("design:type", Object)
+            ], Foo.prototype, "bar", void 0);
+            let instance = new Foo();
+            const result = index_1.serialize(instance);
+            expect(typeof result === 'object').toBe(true);
+            expect(result.bar).toBeDefined();
+            expect(result.bar.value).toBe(instance.bar.value);
+            expect(result.bar.value_rename).toBe(instance.bar.value_name);
+        });
         it('should map properties marked with decorator', () => {
+            let Options;
+            (function (Options) {
+                Options["KEY"] = "VALUE";
+            })(Options || (Options = {}));
             class Foo {
                 constructor() {
                     this.bar = 'bar';
                     this.name = 'name';
+                    this.enum = Options.KEY;
                 }
             }
             __decorate([
@@ -27,6 +69,10 @@ describe('json mapper', () => {
                 index_1.JsonProperty('test'),
                 __metadata("design:type", String)
             ], Foo.prototype, "name", void 0);
+            __decorate([
+                index_1.JsonProperty(),
+                __metadata("design:type", String)
+            ], Foo.prototype, "enum", void 0);
             let instance = new Foo();
             const result = index_1.serialize(instance);
             expect(typeof result === 'object').toBe(true);
@@ -34,6 +80,8 @@ describe('json mapper', () => {
             expect(result.bar).toBe(instance.bar);
             expect(result.test).toBeDefined();
             expect(result.test).toBe(instance.name);
+            expect(result.enum).toBeDefined();
+            expect(result.enum).toBe(Options.KEY);
         });
         it('should ignore properties NOT marked with decorator', () => {
             class Foo {
@@ -65,12 +113,46 @@ describe('json mapper', () => {
         });
     });
     describe('deserialize', () => {
+        it('should property from interface to class instance', () => {
+            class Bar {
+                constructor() {
+                    this.value = undefined;
+                }
+            }
+            __decorate([
+                index_1.JsonProperty(),
+                __metadata("design:type", String)
+            ], Bar.prototype, "value", void 0);
+            class Foo {
+                constructor() {
+                    this.bar = undefined;
+                }
+            }
+            __decorate([
+                index_1.JsonProperty({ classtype: Bar }),
+                __metadata("design:type", Object)
+            ], Foo.prototype, "bar", void 0);
+            let object = {
+                bar: {
+                    value: 'test'
+                }
+            };
+            const result = index_1.deserialize(Foo, object);
+            expect(result instanceof Foo).toBe(true);
+            expect(result.bar.value).toBeDefined();
+            expect(result.bar.value).toBe(object.bar.value);
+        });
         it('should map json property to object', () => {
+            let Options;
+            (function (Options) {
+                Options["KEY"] = "VALUE";
+            })(Options || (Options = {}));
             class Foo {
                 constructor() {
                     this.bar = undefined;
                     this.baz = undefined;
                     this.any = undefined;
+                    this.options = undefined;
                 }
             }
             __decorate([
@@ -85,16 +167,22 @@ describe('json mapper', () => {
                 index_1.JsonProperty(),
                 __metadata("design:type", Object)
             ], Foo.prototype, "any", void 0);
+            __decorate([
+                index_1.JsonProperty(),
+                __metadata("design:type", String)
+            ], Foo.prototype, "options", void 0);
             let object = {
                 test: jasmine.any(String),
                 prop: jasmine.any(String),
-                any: 'aaa'
+                any: 'aaa',
+                options: Options.KEY
             };
             const result = index_1.deserialize(Foo, object);
             expect(result instanceof Foo).toBe(true);
             expect(result.bar).toBe(object.test);
             expect(result.baz).toBe(object.prop);
             expect(result.any).toBe(object.any);
+            expect(result.options).toBe(Options.KEY);
         });
         it('should property if original key already exists', () => {
             class Foo {

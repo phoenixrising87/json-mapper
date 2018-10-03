@@ -3,13 +3,51 @@ import { JsonProperty, ICustomConverter, serialize, deserialize } from './index'
 describe('json mapper', () => {
 
     describe('serialize', () => {
+
+        it('should serialize interfaces to classtype', () => {
+            interface IBar {
+                value: string;
+                value_name: string;
+            }
+
+            class Bar implements IBar {
+                @JsonProperty()
+                public value: string = undefined;
+                @JsonProperty('value_rename')
+                public value_name: string = undefined;
+            }
+
+            class BarCopy implements IBar {
+                public value: string = 'test';
+                public value_name: string = 'test2';
+            }
+
+            class Foo {
+                @JsonProperty({ classtype: Bar })
+                public bar: IBar = new BarCopy();
+            }
+
+            let instance = new Foo();
+            const result = serialize(instance);
+
+            expect(typeof result === 'object').toBe(true);
+            expect(result.bar).toBeDefined();
+            expect(result.bar.value).toBe(instance.bar.value);
+            expect(result.bar.value_rename).toBe(instance.bar.value_name);
+        });
         
         it('should map properties marked with decorator', () => {
+            enum Options {
+                KEY = 'VALUE'
+            }
+
             class Foo {
                 @JsonProperty()
                 public bar: string = 'bar';
                 @JsonProperty('test')
                 public name: string = 'name';
+                @JsonProperty()
+                public enum: Options = Options.KEY;
             }
 
             let instance = new Foo();
@@ -20,6 +58,8 @@ describe('json mapper', () => {
             expect(result.bar).toBe(instance.bar);
             expect(result.test).toBeDefined();
             expect(result.test).toBe(instance.name);
+            expect(result.enum).toBeDefined();
+            expect(result.enum).toBe(Options.KEY);
         });
 
         it('should ignore properties NOT marked with decorator', () => {
@@ -51,6 +91,32 @@ describe('json mapper', () => {
     });
 
     describe('deserialize', () => {
+
+        it('should property from interface to class instance', () => {
+            interface IBar {
+                value: string;
+            }
+
+            class Bar implements IBar {
+                @JsonProperty()
+                public value: string = undefined;
+            }
+
+            class Foo {
+                @JsonProperty({ classtype: Bar })
+                public bar: IBar = undefined;
+            }
+
+            let object = {
+                bar: {
+                    value: 'test'
+                }
+            };
+            const result = deserialize(Foo, object);
+            expect(result instanceof Foo).toBe(true);
+            expect(result.bar.value).toBeDefined();
+            expect(result.bar.value).toBe(object.bar.value);
+        });
 
         it('should map json property to object', () => {
             enum Options {
