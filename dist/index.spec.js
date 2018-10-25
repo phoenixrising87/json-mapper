@@ -12,42 +12,84 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("./index");
 describe('json mapper', () => {
     describe('serialize', () => {
-        it('should serialize interfaces to classtype', () => {
-            class Bar {
-                constructor() {
-                    this.value = undefined;
-                    this.value_name = undefined;
+        describe('interface', () => {
+            it('should serialize to classtype', () => {
+                class Bar {
+                    constructor() {
+                        this.value = undefined;
+                        this.value_name = undefined;
+                    }
                 }
-            }
-            __decorate([
-                index_1.JsonProperty(),
-                __metadata("design:type", String)
-            ], Bar.prototype, "value", void 0);
-            __decorate([
-                index_1.JsonProperty('value_rename'),
-                __metadata("design:type", String)
-            ], Bar.prototype, "value_name", void 0);
-            class BarCopy {
-                constructor() {
-                    this.value = 'test';
-                    this.value_name = 'test2';
+                __decorate([
+                    index_1.JsonProperty(),
+                    __metadata("design:type", String)
+                ], Bar.prototype, "value", void 0);
+                __decorate([
+                    index_1.JsonProperty('value_rename'),
+                    __metadata("design:type", String)
+                ], Bar.prototype, "value_name", void 0);
+                class BarCopy {
+                    constructor() {
+                        this.value = 'test';
+                        this.value_name = 'test2';
+                    }
                 }
-            }
-            class Foo {
-                constructor() {
-                    this.bar = new BarCopy();
+                class Foo {
+                    constructor() {
+                        this.bar = new BarCopy();
+                    }
                 }
-            }
-            __decorate([
-                index_1.JsonProperty({ classtype: Bar }),
-                __metadata("design:type", Object)
-            ], Foo.prototype, "bar", void 0);
-            let instance = new Foo();
-            const result = index_1.serialize(instance);
-            expect(typeof result === 'object').toBe(true);
-            expect(result.bar).toBeDefined();
-            expect(result.bar.value).toBe(instance.bar.value);
-            expect(result.bar.value_rename).toBe(instance.bar.value_name);
+                __decorate([
+                    index_1.JsonProperty({ classtype: Bar }),
+                    __metadata("design:type", Object)
+                ], Foo.prototype, "bar", void 0);
+                let instance = new Foo();
+                const result = index_1.serialize(instance);
+                expect(typeof result === 'object').toBe(true);
+                expect(result.bar).toBeDefined();
+                expect(result.bar.value).toBe(instance.bar.value);
+                expect(result.bar.value_rename).toBe(instance.bar.value_name);
+            });
+            it('should serialize array to classtype', () => {
+                class Bar {
+                    constructor() {
+                        this.value = undefined;
+                        this.value_name = undefined;
+                    }
+                }
+                __decorate([
+                    index_1.JsonProperty(),
+                    __metadata("design:type", String)
+                ], Bar.prototype, "value", void 0);
+                __decorate([
+                    index_1.JsonProperty('value_rename'),
+                    __metadata("design:type", String)
+                ], Bar.prototype, "value_name", void 0);
+                class BarCopy {
+                    constructor() {
+                        this.value = 'test';
+                        this.value_name = 'test2';
+                    }
+                }
+                class Foo {
+                    constructor() {
+                        this.bars = [new BarCopy(), new BarCopy()];
+                    }
+                }
+                __decorate([
+                    index_1.JsonProperty({ classtype: Bar }),
+                    __metadata("design:type", Array)
+                ], Foo.prototype, "bars", void 0);
+                let instance = new Foo();
+                const result = index_1.serialize(instance);
+                expect(typeof result === 'object').toBe(true);
+                expect(result.bars[0]).toBeDefined();
+                expect(result.bars[0].value).toBe(instance.bars[0].value);
+                expect(result.bars[0].value_rename).toBe(instance.bars[0].value_name);
+                expect(result.bars[1]).toBeDefined();
+                expect(result.bars[1].value).toBe(instance.bars[1].value);
+                expect(result.bars[1].value_rename).toBe(instance.bars[1].value_name);
+            });
         });
         it('should map properties marked with decorator', () => {
             let Options;

@@ -117,7 +117,7 @@ function serializeProperty(metaData: IJsonMetaData<any>, property: any): any {
     if (isArray(property)) {        
         return _.map(property, (item: any) => {
             if (metaData.classtype) {
-                return serialize(property, metaData);
+                return serialize(item, metaData);
             }
 
             return serialize(item);

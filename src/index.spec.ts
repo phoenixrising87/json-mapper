@@ -4,36 +4,74 @@ describe('json mapper', () => {
 
     describe('serialize', () => {
 
-        it('should serialize interfaces to classtype', () => {
-            interface IBar {
-                value: string;
-                value_name: string;
-            }
-
-            class Bar implements IBar {
-                @JsonProperty()
-                public value: string = undefined;
-                @JsonProperty('value_rename')
-                public value_name: string = undefined;
-            }
-
-            class BarCopy implements IBar {
-                public value: string = 'test';
-                public value_name: string = 'test2';
-            }
-
-            class Foo {
-                @JsonProperty({ classtype: Bar })
-                public bar: IBar = new BarCopy();
-            }
-
-            let instance = new Foo();
-            const result = serialize(instance);
-
-            expect(typeof result === 'object').toBe(true);
-            expect(result.bar).toBeDefined();
-            expect(result.bar.value).toBe(instance.bar.value);
-            expect(result.bar.value_rename).toBe(instance.bar.value_name);
+        describe('interface', () => {
+            
+            it('should serialize to classtype', () => {
+                interface IBar {
+                    value: string;
+                    value_name: string;
+                }
+    
+                class Bar implements IBar {
+                    @JsonProperty()
+                    public value: string = undefined;
+                    @JsonProperty('value_rename')
+                    public value_name: string = undefined;
+                }
+    
+                class BarCopy implements IBar {
+                    public value: string = 'test';
+                    public value_name: string = 'test2';
+                }
+    
+                class Foo {
+                    @JsonProperty({ classtype: Bar })
+                    public bar: IBar = new BarCopy();
+                }
+    
+                let instance = new Foo();
+                const result = serialize(instance);
+    
+                expect(typeof result === 'object').toBe(true);
+                expect(result.bar).toBeDefined();
+                expect(result.bar.value).toBe(instance.bar.value);
+                expect(result.bar.value_rename).toBe(instance.bar.value_name);
+            });
+    
+            it('should serialize array to classtype', () => {
+                interface IBar {
+                    value: string;
+                    value_name: string;
+                }
+    
+                class Bar implements IBar {
+                    @JsonProperty()
+                    public value: string = undefined;
+                    @JsonProperty('value_rename')
+                    public value_name: string = undefined;
+                }
+    
+                class BarCopy implements IBar {
+                    public value: string = 'test';
+                    public value_name: string = 'test2';
+                }
+    
+                class Foo {
+                    @JsonProperty({ classtype: Bar })
+                    public bars: IBar[] = [new BarCopy(), new BarCopy()];
+                }
+    
+                let instance = new Foo();
+                const result = serialize(instance);
+    
+                expect(typeof result === 'object').toBe(true);
+                expect(result.bars[0]).toBeDefined();
+                expect(result.bars[0].value).toBe(instance.bars[0].value);
+                expect(result.bars[0].value_rename).toBe(instance.bars[0].value_name);
+                expect(result.bars[1]).toBeDefined();
+                expect(result.bars[1].value).toBe(instance.bars[1].value);
+                expect(result.bars[1].value_rename).toBe(instance.bars[1].value_name);
+            });
         });
         
         it('should map properties marked with decorator', () => {

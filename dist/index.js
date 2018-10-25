@@ -108,7 +108,7 @@ function serializeProperty(metaData, property) {
     if (isArray(property)) {
         return _.map(property, (item) => {
             if (metaData.classtype) {
-                return serialize(property, metaData);
+                return serialize(item, metaData);
             }
             return serialize(item);
         });
